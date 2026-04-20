@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Playwrights.Session;
 using Soenneker.Playwrights.TestEnvironment.Abstract;
@@ -30,14 +31,15 @@ public class PlaywrightTestHost : UnitTestHost
     public string BaseUrl =>
         _environment?.BaseUrl ?? throw new InvalidOperationException("Fixture has not been initialized.");
 
-    public override async ValueTask Initialize()
+
+    public override async Task InitializeAsync()
     {
         PlaywrightFixtureOptions options = CreateOptions();
 
         SetupIoC(Services, options);
         ConfigureServices(Services);
 
-        await base.Initialize().NoSync();
+        await base.InitializeAsync().NoSync();
 
         _environment = ServicesProvider!.GetRequiredService<IPlaywrightTestEnvironment>();
         _fileUtil = ServicesProvider!.GetRequiredService<IFileUtil>();
@@ -123,5 +125,13 @@ public class PlaywrightTestHost : UnitTestHost
         }
 
         throw new DirectoryNotFoundException($"Could not locate the solution root containing '{solutionFileName}'.");
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        if (_environment != null)
+            await _environment.DisposeAsync().NoSync();
+
+        await base.DisposeAsync();
     }
 }
