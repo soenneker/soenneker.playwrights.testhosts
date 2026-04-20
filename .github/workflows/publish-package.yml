@@ -56,8 +56,7 @@ jobs:
         run: dotnet build test/Soenneker.Playwrights.TestHosts.Tests/Soenneker.Playwrights.TestHosts.Tests.csproj --configuration Release --no-restore --verbosity minimal
 
       - name: Test
-        run: dotnet test test/Soenneker.Playwrights.TestHosts.Tests/Soenneker.Playwrights.TestHosts.Tests.csproj --configuration Release --no-build --no-restore --verbosity normal
-
+        run: dotnet test --project test/Soenneker.Playwrights.TestHosts.Tests/Soenneker.Playwrights.TestHosts.Tests.csproj --configuration Release --no-build --no-restore --verbosity normal
 
       - name: Restore library
         run: dotnet restore src/Soenneker.Playwrights.TestHosts/Soenneker.Playwrights.TestHosts.csproj --verbosity minimal
