@@ -31,7 +31,6 @@ public class PlaywrightTestHost : UnitTestHost
     public string BaseUrl =>
         _environment?.BaseUrl ?? throw new InvalidOperationException("Fixture has not been initialized.");
 
-
     public override async Task InitializeAsync()
     {
         PlaywrightFixtureOptions options = CreateOptions();
@@ -132,6 +131,6 @@ public class PlaywrightTestHost : UnitTestHost
         if (_environment != null)
             await _environment.DisposeAsync().NoSync();
 
-        await base.DisposeAsync();
+        await base.DisposeAsync().NoSync();
     }
 }
