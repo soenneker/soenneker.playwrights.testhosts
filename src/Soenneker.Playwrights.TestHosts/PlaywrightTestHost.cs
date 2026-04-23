@@ -33,7 +33,7 @@ public class PlaywrightTestHost : UnitTestHost
 
     public override async Task InitializeAsync()
     {
-        PlaywrightFixtureOptions options = CreateOptions();
+        PlaywrightTestHostOptions options = CreateOptions();
 
         SetupIoC(Services, options);
         ConfigureServices(Services);
@@ -56,9 +56,9 @@ public class PlaywrightTestHost : UnitTestHost
         return _environment.CreateSession(sessionOptions, cancellationToken);
     }
 
-    protected virtual PlaywrightFixtureOptions CreateOptions()
+    protected virtual PlaywrightTestHostOptions CreateOptions()
     {
-        return new PlaywrightFixtureOptions
+        return new PlaywrightTestHostOptions
         {
             SolutionFileName = "Soenneker.Bradix.Suite.slnx",
             ProjectRelativePath = Path.Combine("test", "Soenneker.Bradix.Suite.Demo", "Soenneker.Bradix.Suite.Demo.csproj"),
@@ -70,7 +70,7 @@ public class PlaywrightTestHost : UnitTestHost
     {
     }
 
-    public static IServiceCollection SetupIoC(IServiceCollection services, PlaywrightFixtureOptions options)
+    public static IServiceCollection SetupIoC(IServiceCollection services, PlaywrightTestHostOptions options)
     {
         IConfiguration configuration = TestUtil.BuildConfig();
         services.AddSingleton(configuration);
@@ -88,7 +88,7 @@ public class PlaywrightTestHost : UnitTestHost
         return services;
     }
 
-    private async ValueTask<string> ResolveProjectPath(PlaywrightFixtureOptions options, CancellationToken cancellationToken)
+    private async ValueTask<string> ResolveProjectPath(PlaywrightTestHostOptions options, CancellationToken cancellationToken)
     {
         string solutionRoot = await FindSolutionRoot(options.SolutionFileName, cancellationToken).NoSync();
 

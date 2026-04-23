@@ -42,9 +42,9 @@
 
     <ItemGroup>
         <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-        <PackageReference Include="Soenneker.TestHosts.Unit" Version="4.0.13" />
-        <PackageReference Include="Soenneker.Utils.Test" Version="4.0.315" />
-        <PackageReference Include="Soenneker.Playwrights.TestEnvironment" Version="4.0.17" />
+        <PackageReference Include="Soenneker.TestHosts.Unit" Version="4.0.14" />
+        <PackageReference Include="Soenneker.Utils.Test" Version="4.0.316" />
+        <PackageReference Include="Soenneker.Playwrights.TestEnvironment" Version="4.0.22" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.7" />
     </ItemGroup>
 </Project>
