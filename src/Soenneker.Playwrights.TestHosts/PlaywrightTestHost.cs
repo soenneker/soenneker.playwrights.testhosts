@@ -28,9 +28,16 @@ public class PlaywrightTestHost : UnitTestHost
     private IPlaywrightTestEnvironment? _environment;
     private IFileUtil? _fileUtil;
 
+    /// <summary>
+    /// Gets or sets base url.
+    /// </summary>
     public string BaseUrl =>
         _environment?.BaseUrl ?? throw new InvalidOperationException("Fixture has not been initialized.");
 
+    /// <summary>
+    /// Initializes async.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public override async Task InitializeAsync()
     {
         PlaywrightTestHostOptions options = CreateOptions();
@@ -48,6 +55,12 @@ public class PlaywrightTestHost : UnitTestHost
         await _environment.Initialize(_projectPath, CancellationToken.None).NoSync();
     }
 
+    /// <summary>
+    /// Creates session.
+    /// </summary>
+    /// <param name="sessionOptions">The session options.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task containing the result of the operation.</returns>
     public ValueTask<BrowserSession> CreateSession(PlaywrightSessionOptions? sessionOptions = null, CancellationToken cancellationToken = default)
     {
         if (_environment is null)
@@ -70,6 +83,12 @@ public class PlaywrightTestHost : UnitTestHost
     {
     }
 
+    /// <summary>
+    /// Sets up io c.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="options">The options.</param>
+    /// <returns>The result of the operation.</returns>
     public static IServiceCollection SetupIoC(IServiceCollection services, PlaywrightTestHostOptions options)
     {
         IConfiguration configuration = TestUtil.BuildConfig();
@@ -126,6 +145,10 @@ public class PlaywrightTestHost : UnitTestHost
         throw new DirectoryNotFoundException($"Could not locate the solution root containing '{solutionFileName}'.");
     }
 
+    /// <summary>
+    /// Asynchronously releases resources used by the current instance.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public override async ValueTask DisposeAsync()
     {
         if (_environment != null)
