@@ -58,9 +58,9 @@ public class PlaywrightTestHost : UnitTestHost
     /// <summary>
     /// Creates session.
     /// </summary>
-    /// <param name="sessionOptions">The session options.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task containing the result of the operation.</returns>
+    /// <param name="sessionOptions">Options controlling browser creation and the test session lifetime.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task whose result is the requested browser Session.</returns>
     public ValueTask<BrowserSession> CreateSession(PlaywrightSessionOptions? sessionOptions = null, CancellationToken cancellationToken = default)
     {
         if (_environment is null)
@@ -84,11 +84,11 @@ public class PlaywrightTestHost : UnitTestHost
     }
 
     /// <summary>
-    /// Sets up io c.
+    /// Registers the services required by the application.
     /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="options">The options.</param>
-    /// <returns>The result of the operation.</returns>
+    /// <param name="services">Service collection that receives the registration.</param>
+    /// <param name="options">Options to configure for the Playwright Test Host.</param>
+    /// <returns>The same service collection, so additional registrations can be chained.</returns>
     public static IServiceCollection SetupIoC(IServiceCollection services, PlaywrightTestHostOptions options)
     {
         IConfiguration configuration = TestUtil.BuildConfig();
