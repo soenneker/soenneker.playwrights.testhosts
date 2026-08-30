@@ -19,7 +19,7 @@ using Soenneker.Utils.Test;
 namespace Soenneker.Playwrights.TestHosts;
 
 /// <summary>
-/// A test fixture for testing with Playwright
+/// Starts an application project and exposes Playwright browser sessions to a test suite.
 /// </summary>
 public class PlaywrightTestHost : UnitTestHost
 {
@@ -29,13 +29,13 @@ public class PlaywrightTestHost : UnitTestHost
     private IFileUtil? _fileUtil;
 
     /// <summary>
-    /// Gets or sets base url.
+    /// Gets the application base URL after the host has initialized.
     /// </summary>
     public string BaseUrl =>
         _environment?.BaseUrl ?? throw new InvalidOperationException("Fixture has not been initialized.");
 
     /// <summary>
-    /// Initializes async.
+    /// Builds the service provider, resolves the configured project, and starts the Playwright test environment.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public override async Task InitializeAsync()
@@ -50,17 +50,24 @@ public class PlaywrightTestHost : UnitTestHost
         _environment = ServicesProvider!.GetRequiredService<IPlaywrightTestEnvironment>();
         _fileUtil = ServicesProvider!.GetRequiredService<IFileUtil>();
 
-        _projectPath = await ResolveProjectPath(options, CancellationToken.None).NoSync();
-
-        await _environment.Initialize(_projectPath, CancellationToken.None).NoSync();
+        try
+        {
+            _projectPath = await ResolveProjectPath(options, CancellationToken.None).NoSync();
+            await _environment.Initialize(_projectPath, CancellationToken.None).NoSync();
+        }
+        catch
+        {
+            await _environment.DisposeAsync().NoSync();
+            throw;
+        }
     }
 
     /// <summary>
-    /// Creates session.
+    /// Creates a browser session using the host defaults or the supplied reuse overrides.
     /// </summary>
     /// <param name="sessionOptions">Options controlling browser creation and the test session lifetime.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <returns>A task whose result is the requested browser Session.</returns>
+    /// <returns>A task whose result is the requested browser session.</returns>
     public ValueTask<BrowserSession> CreateSession(PlaywrightSessionOptions? sessionOptions = null, CancellationToken cancellationToken = default)
     {
         if (_environment is null)
@@ -69,16 +76,19 @@ public class PlaywrightTestHost : UnitTestHost
         return _environment.CreateSession(sessionOptions, cancellationToken);
     }
 
+    /// <summary>
+    /// Creates the solution, application project, build, and session-reuse options for this host.
+    /// </summary>
+    /// <returns>The options used to locate and start the application.</returns>
     protected virtual PlaywrightTestHostOptions CreateOptions()
     {
-        return new PlaywrightTestHostOptions
-        {
-            SolutionFileName = "Soenneker.Bradix.Suite.slnx",
-            ProjectRelativePath = Path.Combine("test", "Soenneker.Bradix.Suite.Demo", "Soenneker.Bradix.Suite.Demo.csproj"),
-            ApplicationName = "Bradix demo"
-        };
+        throw new InvalidOperationException($"{GetType().Name} must override {nameof(CreateOptions)} and identify its application project.");
     }
 
+    /// <summary>
+    /// Adds test-specific services before the host service provider is built.
+    /// </summary>
+    /// <param name="services">Service collection to configure.</param>
     protected virtual void ConfigureServices(IServiceCollection services)
     {
     }
@@ -111,7 +121,11 @@ public class PlaywrightTestHost : UnitTestHost
     {
         string solutionRoot = await FindSolutionRoot(options.SolutionFileName, cancellationToken).NoSync();
 
-        string projectPath = Path.Combine(solutionRoot, options.ProjectRelativePath);
+        string projectPath = Path.GetFullPath(Path.Combine(solutionRoot, options.ProjectRelativePath));
+        string solutionRootPrefix = Path.EndsInDirectorySeparator(solutionRoot) ? solutionRoot : solutionRoot + Path.DirectorySeparatorChar;
+
+        if (!projectPath.StartsWith(solutionRootPrefix, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"The project path must remain inside the solution root '{solutionRoot}'.");
 
         if (!await _fileUtil!.Exists(projectPath, cancellationToken).NoSync())
             throw new FileNotFoundException($"Could not locate the '{options.ApplicationName}' project.", projectPath);
@@ -121,6 +135,9 @@ public class PlaywrightTestHost : UnitTestHost
 
     private async ValueTask<string> FindSolutionRoot(string solutionFileName, CancellationToken cancellationToken)
     {
+        if (!string.Equals(Path.GetFileName(solutionFileName), solutionFileName, StringComparison.Ordinal))
+            throw new InvalidOperationException("SolutionFileName must be a file name, not a path.");
+
         string[] startingPoints =
         [
             AppContext.BaseDirectory,
@@ -145,15 +162,16 @@ public class PlaywrightTestHost : UnitTestHost
         throw new DirectoryNotFoundException($"Could not locate the solution root containing '{solutionFileName}'.");
     }
 
-    /// <summary>
-    /// Asynchronously releases resources used by the current instance.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     public override async ValueTask DisposeAsync()
     {
-        if (_environment != null)
-            await _environment.DisposeAsync().NoSync();
-
-        await base.DisposeAsync().NoSync();
+        try
+        {
+            if (_environment != null)
+                await _environment.DisposeAsync().NoSync();
+        }
+        finally
+        {
+            await base.DisposeAsync().NoSync();
+        }
     }
 }
