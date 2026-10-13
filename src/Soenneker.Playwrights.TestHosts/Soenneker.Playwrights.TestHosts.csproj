@@ -47,7 +47,7 @@
         <PackageReference Include="Soenneker.TestHosts.Unit" Version="4.0.188" />
         <PackageReference Include="Soenneker.Utils.Test" Version="4.0.332" />
         <PackageReference Include="Soenneker.Playwrights.TestEnvironment" Version="4.0.295" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.12" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.13" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Soenneker.Extensions.ValueTask" Version="4.0.127" />
